@@ -13,6 +13,7 @@ while [ 1 ]; do
   DIFF=`diff /tmp/$BRANCH-heads.hash /tmp/$BRANCH-origin.hash`
         if [ "" != "$DIFF" ]; then
                 git pull origin $BRANCH > $BRANCH.log
+                rake parallel:migrate
                 time rake parallel:test >> $BRANCH.log
                 ERR=`grep Failure $BRANCH.log`
                 if [ "" != "$ERR" ]; then
