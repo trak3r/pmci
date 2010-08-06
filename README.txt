@@ -8,6 +8,10 @@ HOW DO I INSTALL IT?
 
 Copy the "ci" script into the root of your Rails project.
 
+***
+*** CHANGE THE E-MAIL ADDRESS IN THE SCRIPT TO *YOUR* E-MAIL ADDRESS
+***
+
 
 HOW DO I RUN IT?
 

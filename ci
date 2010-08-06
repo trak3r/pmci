@@ -17,7 +17,7 @@ while [ 1 ]; do
                 time rake parallel:test >> $BRANCH.log
                 ERR=`grep Failure $BRANCH.log`
                 if [ "" != "$ERR" ]; then
-                        cat $BRANCH.log | mail -s "Build Failure" teflonted@rudiment.net
+                        cat $BRANCH.log | mail -s "Build Failure" pmci@rudiment.net
                 fi
         else
     echo NO CHANGES YET
