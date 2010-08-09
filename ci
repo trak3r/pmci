@@ -15,7 +15,7 @@ while [ 1 ]; do
     git pull origin $BRANCH > $BRANCH.log
     rake parallel:migrate
     time rake parallel:test >> $BRANCH.log
-    ERR=`grep Failure $BRANCH.log`
+    ERR=`egrep Failure\|Error $BRANCH.log`
     if [ "" != "$ERR" ]; then
       cat $BRANCH.log | mail -s "Build Failure" your@email.address.duh
     fi
