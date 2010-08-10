@@ -17,7 +17,7 @@ while [ 1 ]; do
     time rake parallel:test >> $BRANCH.log
     ERR=`egrep Failure\|Error $BRANCH.log`
     if [ "" != "$ERR" ]; then
-      cat $BRANCH.log | mail -s "Build Failure" your@email.address.duh
+      cat $BRANCH.log | mail -s "Tests failed on $BRANCH" your@email.address.duh
     fi
   else
     echo NO CHANGES YET
