@@ -12,9 +12,9 @@ HOW DO I INSTALL IT?
 
 HOW DO I RUN IT?
 
-./ci master
+./ci <branch name> <another branch name> <...>
 
-(Replace "master" with the branch name you want to test.)
+(Replace "<branch name>" with the branch name you want to test, like "master".)
 
 
 WHAT DOES IT DO?

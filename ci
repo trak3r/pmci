@@ -1,22 +1,18 @@
 #!/bin/bash
-BRANCH=$@
-if [ "" == "$BRANCH" ]; then
-  echo PLEASE SPECIFY A BRANCH NAME
-  exit
-fi
-git checkout -t origin/$BRANCH
-git checkout $BRANCH
-while [ 1 ]; do
+for branch in $@
+do
+  git checkout -t origin/$branch
+  git checkout $branch
   git fetch origin
-  git ls-remote . | grep "heads/$BRANCH$" | awk '{print $1}' > /tmp/$BRANCH-heads.hash
-  git ls-remote . | grep "origin/$BRANCH$" | awk '{print $1}' > /tmp/$BRANCH-origin.hash
-  DIFF=`diff /tmp/$BRANCH-heads.hash /tmp/$BRANCH-origin.hash`
+  git ls-remote . | grep "heads/$branch$" | awk '{print $1}' > /tmp/$branch-heads.hash
+  git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > /tmp/$branch-origin.hash
+  DIFF=`diff /tmp/$branch-heads.hash /tmp/$branch-origin.hash`
   if [ "" != "$DIFF" ]; then
-    git pull origin $BRANCH > $BRANCH.log
+    git pull origin $branch > $branch.log
     rake parallel:migrate
-    rake parallel:test >> $BRANCH.log
-    ERR=`egrep "Failure|\) Error:" $BRANCH.log | wc -l`
-    cat $BRANCH.log | mail -s "$ERR tests failed on $BRANCH" your@email.address.duh
+    rake parallel:test >> $branch.log
+    ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
+    cat $branch.log | mail -s "$ERR tests failed on $branch" your@email.address.duh
   else
     echo NO CHANGES YET
   fi
