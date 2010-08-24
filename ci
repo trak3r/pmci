@@ -1,20 +1,22 @@
 #!/bin/bash
-for branch in $@
-do
-  git checkout -t origin/$branch
-  git checkout $branch
-  git fetch origin
-  git ls-remote . | grep "heads/$branch$" | awk '{print $1}' > /tmp/$branch-heads.hash
-  git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > /tmp/$branch-origin.hash
-  DIFF=`diff /tmp/$branch-heads.hash /tmp/$branch-origin.hash`
-  if [ "" != "$DIFF" ]; then
-    git pull origin $branch > $branch.log
-    rake parallel:migrate
-    rake parallel:test >> $branch.log
-    ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
-    cat $branch.log | mail -s "$ERR tests failed on $branch" your@email.address.duh
-  else
-    echo NO CHANGES YET
-  fi
-  sleep 60s
+while [ 1 ]; do
+  for branch in $@
+  do
+    git checkout -t origin/$branch
+    git checkout $branch
+    git fetch origin
+    git ls-remote . | grep "heads/$branch$" | awk '{print $1}' > /tmp/$branch-heads.hash
+    git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > /tmp/$branch-origin.hash
+    DIFF=`diff /tmp/$branch-heads.hash /tmp/$branch-origin.hash`
+    if [ "" != "$DIFF" ]; then
+      git pull origin $branch > $branch.log
+      rake parallel:migrate
+      rake parallel:test >> $branch.log
+      ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
+      cat $branch.log | mail -s "$ERR tests failed on $branch" your@email.address.duh
+    else
+      echo NO CHANGES YET
+    fi
+    sleep 60s
+  done
 done
