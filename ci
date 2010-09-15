@@ -14,6 +14,7 @@ while [ 1 ]; do
       rake parallel:test >> $branch.log
       ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
       cat $branch.log | mail -s "$ERR tests failed on $branch" your@email.address.duh
+      git-commit-notifier ~/git-commit-notifier.yml `cat /tmp/$branch-heads.hash` `cat /tmp/$branch-origin.hash` $branch
     else
       echo NO CHANGES YET
     fi
