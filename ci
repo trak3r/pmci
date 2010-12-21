@@ -4,7 +4,6 @@ while [ 1 ]; do
   do
     git checkout -t origin/$branch
     git checkout $branch
-    git reset --hard origin/$branch
     git fetch origin
     git ls-remote . | grep "heads/$branch$" | awk '{print $1}' > /tmp/$branch-heads.hash
     git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > /tmp/$branch-origin.hash
