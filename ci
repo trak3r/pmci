@@ -10,14 +10,16 @@ while [ 1 ]; do
     DIFF=`diff /tmp/$branch-heads.hash /tmp/$branch-origin.hash`
     if [ "" != "$DIFF" ]; then
       git pull origin $branch > $branch.log
-      rake parallel:migrate
-      rake parallel:test >> $branch.log
+      rake parallel:migrate >> $branch.log
+      TZ=UTC rake parallel:test >> $branch.log
       ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
       cat $branch.log | mail -s "$ERR tests failed on $branch" your@email.address.duh
+      RAILS_ENV=test rake clean
       git-commit-notifier ~/git-commit-notifier.yml `cat /tmp/$branch-heads.hash` `cat /tmp/$branch-origin.hash` $branch
+      git reset --hard origin/$branch 
     else
       echo NO CHANGES YET
     fi
-    sleep 60s
+    sleep 10s
   done
 done
