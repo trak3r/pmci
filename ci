@@ -1,7 +1,16 @@
 #!/bin/bash
+
+# http://stackoverflow.com/questions/5792707/cannot-change-rvm-gemset-from-shell-script-via-rvm-gemset-use
+#
+# IMPORTANT: Source RVM as a function into local environment.
+#            Otherwise switching gemsets won't work.
+[ -s "$HOME/.rvm/scripts/rvm" ] && . "$HOME/.rvm/scripts/rvm"
+rvm use 1.9.3-p286
+
 while [ 1 ]; do
   for branch in $@
   do
+    git clean -df
     git checkout -t origin/$branch
     git checkout $branch
     git fetch origin
@@ -9,17 +18,17 @@ while [ 1 ]; do
     git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > /tmp/$branch-origin.hash
     DIFF=`diff /tmp/$branch-heads.hash /tmp/$branch-origin.hash`
     if [ "" != "$DIFF" ]; then
-      git pull origin $branch > $branch.log
-      rake parallel:migrate >> $branch.log
-      TZ=UTC rake parallel:test >> $branch.log
+      git reset --hard origin/$branch > $branch.log
+      bundle install >> $branch.log
+      RAILS_ENV=test bundle exec rake db:migrate --trace >> $branch.log
+      RAILS_ENV=test bundle exec rake test --trace >> $branch.log
+      git reset --hard >> $branch.log
       ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
-      cat $branch.log | mail -s "$ERR tests failed on $branch" your@email.address.duh
-      RAILS_ENV=test rake clean
-      git-commit-notifier ~/git-commit-notifier.yml `cat /tmp/$branch-heads.hash` `cat /tmp/$branch-origin.hash` $branch
-      git reset --hard origin/$branch 
+      cat $branch.log | mail -s "$ERR tests failed on $branch" ted@nutrio.com
     else
       echo NO CHANGES YET
     fi
-    sleep 10s
+    sleep 9s
   done
 done
+
