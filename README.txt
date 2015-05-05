@@ -23,15 +23,3 @@ WHAT DOES IT DO?
 Every X seconds it compares the specified branch(es) to the remote repository.
 If there are changes it pulls the new version and runs the tests.
 If any tests fail, it e-mails you the output.
-
-
-TODO/FIXME
-
-* remove parallel gem references/requirements
-* remove rvm requirement
-* move personal stuff (sleep time, email, repo, branch) into ENV vars
-* ... with helpful errors if they are missing/wrong
-* use long-form flags on command lines to avoid confusion
-* make /tmp use safe for multiple pmci/repos to be running on same machine
-* convert this readme to markdown
-

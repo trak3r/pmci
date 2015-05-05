@@ -1,34 +1,53 @@
 #!/bin/bash
 
-# http://stackoverflow.com/questions/5792707/cannot-change-rvm-gemset-from-shell-script-via-rvm-gemset-use
-#
-# IMPORTANT: Source RVM as a function into local environment.
-#            Otherwise switching gemsets won't work.
-[ -s "$HOME/.rvm/scripts/rvm" ] && . "$HOME/.rvm/scripts/rvm"
-rvm use 1.9.3-p286
+if [ "$EMAIL" = "" ]
+then
+  echo "Please set EMAIL"
+  exit 1
+fi
+
+if [ "$#" -lt 1 ]; then
+  echo "Please specify at least one branch name"
+  exit 1
+fi
+
+if [ "$SLEEP_INTERVAL" = "" ]
+then
+  SLEEP_INTERVAL="9s"
+fi
+
+repository_name=$(basename `git rev-parse --show-toplevel`)
+working_folder="/tmp/$repository_name"
+mkdir -p "$working_folder"
 
 while [ 1 ]; do
   for branch in $@
   do
-    git clean -df
-    git checkout -t origin/$branch
+    # -d Remove untracked directories in addition to untracked files.
+    git clean -d --force
+    # in case this is the first time we're seeing this branch
+    # FIXME: this is going to spit out a "fatal" warning if branch already tracked
+    # -t, --track When creating a new branch, set up "upstream" configuration.
+    git checkout --track origin/$branch
     git checkout $branch
     git fetch origin
-    git ls-remote . | grep "heads/$branch$" | awk '{print $1}' > /tmp/$branch-heads.hash
-    git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > /tmp/$branch-origin.hash
-    DIFF=`diff /tmp/$branch-heads.hash /tmp/$branch-origin.hash`
+    git ls-remote . | grep "heads/$branch$" | awk '{print $1}' > $working_folder/$branch-heads.hash
+    git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > $working_folder/$branch-origin.hash
+    DIFF=`diff $working_folder/$branch-heads.hash $working_folder/$branch-origin.hash`
     if [ "" != "$DIFF" ]; then
-      git reset --hard origin/$branch > $branch.log
-      bundle install >> $branch.log
-      RAILS_ENV=test bundle exec rake db:migrate --trace >> $branch.log
-      RAILS_ENV=test bundle exec rake test --trace >> $branch.log
-      git reset --hard >> $branch.log
+      # --hard Any changes to tracked files in the working tree discarded.
+      git reset --hard origin/$branch > $branch.log 2>&1
+      bundle install >> $branch.log 2>&1
+      RAILS_ENV=test bundle exec rake db:migrate --trace >> $branch.log 2>&1
+      RAILS_ENV=test bundle exec rake test --verbose >> $branch.log 2>&1
+      # why do we do this twice? to note anything that was "dirtied" into the log
+      git reset --hard >> $branch.log 2>&1
       ERR=`egrep "Failure|\) Error:" $branch.log | wc -l`
-      cat $branch.log | mail -s "$ERR tests failed on $branch" ted@nutrio.com
+      cat $branch.log | mail -s "$ERR tests failed for $repository_name $branch" $EMAIL
     else
       echo NO CHANGES YET
     fi
-    sleep 9s
+    sleep "$SLEEP_INTERVAL"
   done
 done
 
