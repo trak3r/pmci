@@ -13,7 +13,7 @@ fi
 
 if [ "$SLEEP_INTERVAL" = "" ]
 then
-  SLEEP_INTERVAL="9s"
+  SLEEP_INTERVAL="30s"
 fi
 
 repository_name=$(basename `git rev-parse --show-toplevel`)
