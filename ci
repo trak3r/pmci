@@ -40,7 +40,8 @@ while [ 1 ]; do
       git reset --hard origin/$branch > $log_file 2>&1
       bundle install >> $log_file 2>&1
       RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
-      RAILS_ENV=test bundle exec rake test --verbose >> $log_file 2>&1
+      # gem 'minitest-profile' # required for --profile
+      TESTOPTS='--profile' RAILS_ENV=test bundle exec rake test --verbose >> $log_file 2>&1
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
       ERR=`egrep "Failure:|Error:" $log_file | wc -l`
