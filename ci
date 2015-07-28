@@ -24,6 +24,7 @@ while [ 1 ]; do
   for branch in $@
   do
     log_file="$working_folder/$branch.log"
+    gems_file="$working_folder/$branch_gems.log"
     # -d Remove untracked directories in addition to untracked files.
     git clean -d --force
     # in case this is the first time we're seeing this branch
@@ -38,10 +39,12 @@ while [ 1 ]; do
     if [ "" != "$DIFF" ]; then
       # --hard Any changes to tracked files in the working tree discarded.
       git reset --hard origin/$branch > $log_file 2>&1
-      bundle install >> $log_file 2>&1
+      bundle install > $gems_file 2>&1
       RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
       # gem 'minitest-profile' # required for --profile
       TESTOPTS='--profile' RAILS_ENV=test bundle exec rake test --verbose >> $log_file 2>&1
+      # append the bundle install output AFTER the test data
+      cat $gems_file >> $log_file 2>&1
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
       ERR=`egrep "Failure:|Error:" $log_file | wc -l`
