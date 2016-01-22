@@ -48,7 +48,7 @@ while [ 1 ]; do
       cat $gems_file >> $log_file 2>&1
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
-      ERR=`egrep "Failure:|Error:" $log_file | wc -l`
+      ERR=`egrep '(Failure|Error):$' $log_file | wc -l`
       headline="$ERR tests failed for $repository_name $branch $comment"
       cat $log_file | perl -pe 's/\x1b\[[0-9;]*[mG]//g' | mail -s "$headline" $EMAIL
       if [ -z "$SLACKBOT_URL" ]; then
