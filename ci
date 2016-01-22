@@ -48,7 +48,13 @@ while [ 1 ]; do
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
       ERR=`egrep "Failure:|Error:" $log_file | wc -l`
-      cat $log_file | perl -pe 's/\x1b\[[0-9;]*[mG]//g' | mail -s "$ERR tests failed for $repository_name $branch" $EMAIL
+      headline="$ERR tests failed for $repository_name $branch"
+      cat $log_file | perl -pe 's/\x1b\[[0-9;]*[mG]//g' | mail -s "$headline" $EMAIL
+      if [ -z "$SLACKBOT_URL" ]; then
+        echo "Please set SLACKBOT_URL so the Slack channel can be notified."
+      else
+        curl -X POST --data-urlencode "payload={\"channel\": \"#general\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" "https://hooks.slack.com/services/$SLACKBOT_URL"
+      fi
       rm log/test.log
     else
       echo NO CHANGES YET
