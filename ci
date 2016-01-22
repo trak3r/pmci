@@ -37,6 +37,7 @@ while [ 1 ]; do
     git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > $working_folder/$branch-origin.hash
     DIFF=`diff $working_folder/$branch-heads.hash $working_folder/$branch-origin.hash`
     if [ "" != "$DIFF" ]; then
+      comment=`git log --oneline -1`
       # --hard Any changes to tracked files in the working tree discarded.
       git reset --hard origin/$branch > $log_file 2>&1
       bundle install > $gems_file 2>&1
@@ -48,7 +49,7 @@ while [ 1 ]; do
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
       ERR=`egrep "Failure:|Error:" $log_file | wc -l`
-      headline="$ERR tests failed for $repository_name $branch"
+      headline="$ERR tests failed for $repository_name $branch $comment"
       cat $log_file | perl -pe 's/\x1b\[[0-9;]*[mG]//g' | mail -s "$headline" $EMAIL
       if [ -z "$SLACKBOT_URL" ]; then
         echo "Please set SLACKBOT_URL so the Slack channel can be notified."
@@ -62,4 +63,3 @@ while [ 1 ]; do
     sleep "$SLEEP_INTERVAL"
   done
 done
-
