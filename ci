@@ -37,9 +37,9 @@ while [ 1 ]; do
     git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > $working_folder/$branch-origin.hash
     DIFF=`diff $working_folder/$branch-heads.hash $working_folder/$branch-origin.hash`
     if [ "" != "$DIFF" ]; then
-      comment=`git log --oneline -1`
       # --hard Any changes to tracked files in the working tree discarded.
       git reset --hard origin/$branch > $log_file 2>&1
+      comment=`git log --oneline -1`
       bundle install > $gems_file 2>&1
       RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
       # gem 'minitest-profile' # required for --profile
