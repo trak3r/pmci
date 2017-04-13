@@ -59,6 +59,11 @@ while [ 1 ]; do
         fi
       fi
       rm log/test.log
+
+      bundle exec brakeman -o brakeman.html 2> brakeman.log
+      cat brakeman.html | mail -s "$(echo -e "Brakeman report for $repository_name $branch $comment\nContent-Type: text/html")" $EMAIL
+      rm brakeman.*
+
     else
       echo NO CHANGES YET
     fi
