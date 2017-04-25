@@ -48,10 +48,14 @@ while [ 1 ]; do
       cat $gems_file >> $log_file 2>&1
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
-      ERR=`egrep '(Failure|Error):$' $log_file | wc -l`
-      headline="$ERR tests failed for $repository_name $branch $comment"
+      ERRORS_COUNT=`egrep '(Failure|Error):$' $log_file | wc -l`
+      FINISHED_IN=`grep 'Finished in' $log_file | wc -l`
+      if [ "$FINISHED_IN" -ne "1" ]; then
+        ERRORS_COUNT="911"
+      fi
+      headline="$ERRORS_COUNT tests failed for $repository_name $branch $comment"
       cat $log_file | perl -pe 's/\x1b\[[0-9;]*[mG]//g' | mail -s "$headline" $EMAIL
-      if [ "$ERR" -ne "0" ]; then
+      if [ "$ERRORS_COUNT" -ne "0" ]; then
         if [ -z "$SLACKBOT_URL" ]; then
           echo "Please set SLACKBOT_URL so the Slack channel can be notified."
         else
