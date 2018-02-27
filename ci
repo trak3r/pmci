@@ -42,8 +42,9 @@ while [ 1 ]; do
       comment=`git log --oneline -1`
       bundle install > $gems_file 2>&1
       RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
-      if [ "$repository_name" == "interface" ]; then
+      if [ "$repository_name" == "ci-interface" ]; then
         find app/javascript -name *.coffee -exec coffeelint {} \; >> $log_file 2>&1
+	yarn install >> $log_file 2>&1
       fi
       bundle exec brakeman 2> /dev/null >> $log_file
       # gem 'minitest-profile' # required for --profile
