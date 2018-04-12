@@ -65,7 +65,7 @@ while [ 1 ]; do
         if [ -z "$SLACKBOT_URL" ]; then
           echo "Please set SLACKBOT_URL so the Slack channel can be notified."
         else
-          curl -X POST --data-urlencode "payload={\"channel\": \"#general\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" "https://hooks.slack.com/services/$SLACKBOT_URL"
+          curl -X POST --data-urlencode "payload={\"channel\": \"#dev\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" "https://hooks.slack.com/services/$SLACKBOT_URL"
         fi
       fi
       rm log/test.log
