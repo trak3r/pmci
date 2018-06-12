@@ -41,6 +41,11 @@ while [ 1 ]; do
       git reset --hard origin/$branch > $log_file 2>&1
       comment=`git log --oneline -1`
       bundle install > $gems_file 2>&1
+      echo >> $log_file 2>&1
+      echo "Top 10 worst rubocop offenders:" >> $log_file 2>&1
+      # broken pipe workaround hack https://superuser.com/a/642932/23033
+      (rubocop --format worst app test | tail -n +1 | head -n 11) >> $log_file 2>&1
+      echo >> $log_file 2>&1
       RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
       if [ "$repository_name" == "ci-interface" ]; then
         # strip out files w/out errors and blank lines
