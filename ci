@@ -42,7 +42,7 @@ while [ 1 ]; do
       comment=`git log --oneline -1`
       bundle install > $gems_file 2>&1
       echo >> $log_file 2>&1
-      echo "Top 10 worst rubocop offenders:" >> $log_file 2>&1
+      echo "Top 10 rubocop offenders:" >> $log_file 2>&1
       # broken pipe workaround hack https://superuser.com/a/642932/23033
       (rubocop --format worst app test | head -n 11) >> $log_file 2>/dev/null
       echo >> $log_file 2>&1
