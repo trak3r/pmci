@@ -50,7 +50,6 @@ while [ 1 ]; do
       if [ "$repository_name" == "ci-interface" ]; then
         # strip out files w/out errors and blank lines
         find app/javascript -name *.coffee -exec coffeelint {} \; | grep -v "0 errors" | grep -v " ✓ " | sed '/^$/d' >> $log_file 2>&1
-	yarn install >> $log_file 2>&1
       fi
       bundle exec brakeman 2> /dev/null >> $log_file
       # gem 'minitest-profile' # required for --profile
