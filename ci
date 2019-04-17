@@ -44,7 +44,7 @@ while [ 1 ]; do
       echo >> $log_file 2>&1
       echo "Top 10 rubocop offenders:" >> $log_file 2>&1
       # broken pipe workaround hack https://superuser.com/a/642932/23033
-      (rubocop --format worst app test | head -n 11) >> $log_file 2>/dev/null
+      (bundle exec rubocop --format worst app test | tail -n +1 | head -n 11) >> $log_file 2>/dev/null
       echo >> $log_file 2>&1
       RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
       if [ "$repository_name" == "ci-interface" ]; then
