@@ -47,8 +47,10 @@ while [ 1 ]; do
       rubocop_diff="$working_folder/rubocop.diff"
       git diff > $rubocop_diff
       if [ -s "$rubocop_diff" ]; then
-        headline="rubocop suggested changes to $repository_name $branch $comment"
-        cat $rubocop_diff | mail -s "$headline" $EMAIL
+        headline="rubocop suggests changes to $repository_name $branch $comment"
+	printf '%s\n%s\n' "<pre>" "$(cat $rubocop_diff)" > $rubocop_diff
+	echo "</pre>" >> $rubocop_diff
+        cat $rubocop_diff | mail -a "Content-type: text/html" -s "$headline" $EMAIL
       fi
       git reset --hard origin/$branch
 
