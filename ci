@@ -58,14 +58,14 @@ while [ 1 ]; do
       # broken pipe workaround hack https://superuser.com/a/642932/23033
       (bundle exec rubocop --format worst | tail -n +1 | head -n 11) >> $log_file 2>/dev/null
       echo >> $log_file 2>&1
-      RAILS_ENV=test bundle exec rake db:migrate --trace >> $log_file 2>&1
+      RAILS_ENV=test bundle exec rails db:migrate --trace >> $log_file 2>&1
       if [ "$repository_name" == "ci-interface" ]; then
         # strip out files w/out errors and blank lines
         find app/javascript -name *.coffee -exec coffeelint {} \; | grep -v "0 errors" | grep -v " ✓ " | sed '/^$/d' >> $log_file 2>&1
       fi
       bundle exec brakeman 2> /dev/null >> $log_file
       # gem 'minitest-profile' # required for --profile
-      TESTOPTS='--profile' RAILS_ENV=test bundle exec rake test --verbose >> $log_file 2>&1
+      TESTOPTS='--profile' RAILS_ENV=test bundle exec rails test --verbose >> $log_file 2>&1
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
       ERRORS_COUNT=`egrep '(Failure|Error):$' $log_file | wc -l`
