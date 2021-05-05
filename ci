@@ -64,8 +64,7 @@ while [ 1 ]; do
         find app/javascript -name *.coffee -exec coffeelint {} \; | grep -v "0 errors" | grep -v " ✓ " | sed '/^$/d' >> $log_file 2>&1
       fi
       bundle exec brakeman 2> /dev/null >> $log_file
-      # gem 'minitest-profile' # required for --profile
-      TESTOPTS='--profile' RAILS_ENV=test bundle exec rails test >> $log_file 2>&1
+      bundle exec rails test --profile >> $log_file 2>&1
       # why do we do this twice? to note anything that was "dirtied" into the log
       git reset --hard >> $log_file 2>&1
       ERRORS_COUNT=`egrep '(Failure|Error):$' $log_file | wc -l`
