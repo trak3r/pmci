@@ -80,14 +80,6 @@ while [ 1 ]; do
           echo "Please set SLACKBOT_URL so the Slack channel can be notified."
         else
           curl -X POST --data-urlencode "payload={\"channel\": \"#dev\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" "https://hooks.slack.com/services/$SLACKBOT_URL"
-
-curl \
--X POST \
---header "Content-Type: application/json" \
---header "Accept: application/json" \
---data "{\"workspace\":\"nuTAiAae3ppihLZhM\",\"body\":\"$headline\",\"containerId\":\"rWqjAF2KaYjAXbhbb\"}" \
-"https://app.hive.com/api/v1/messages/create?api_key=$HIVE_API_KEY&user_id=$HIVE_USER_ID" 
-
         fi
       fi
       rm log/test.log
