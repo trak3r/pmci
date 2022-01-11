@@ -58,6 +58,8 @@ while [ 1 ]; do
       # broken pipe workaround hack https://superuser.com/a/642932/23033
       (bundle exec rubocop --format worst | tail -n +1 | head -n 11) >> $log_file 2>/dev/null
       echo >> $log_file 2>&1
+      # create the database(s) if necessary
+      bundle exec rails db:test:prepare --trace >> $log_file 2>&1
       RAILS_ENV=test bundle exec rails db:migrate --trace >> $log_file 2>&1
       if [ "$repository_name" == "ci-interface" ]; then
         # strip out files w/out errors and blank lines
