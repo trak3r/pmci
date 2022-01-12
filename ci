@@ -105,6 +105,10 @@ while [ 1 ]; do
       #
       RAILS_ENV=test bundle exec rails assets:precompile 2>/dev/null
       #
+      # not sure why this is only _sometimes_ necessary and whined about
+      #
+      RAILS_ENV=test bundle exec rails db:environment:set --trace >> $log_file 2>&1
+      #
       # finally we actually run the tests
       #
       bundle exec rails test --profile >> $log_file 2>&1
