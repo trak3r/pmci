@@ -79,7 +79,7 @@ while [ 1 ]; do
       #
       # create the database(s) if necessary
       #
-      bundle exec rails db:test:prepare --trace >> $log_file 2>&1
+      RAILS_ENV=test bundle exec rails db:test:prepare --trace >> $log_file 2>&1
       #
       # apply any migrations that weren't applied from the "prepare" step above
       #
