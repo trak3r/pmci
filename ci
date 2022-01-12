@@ -24,11 +24,15 @@ while [ 1 ]; do
   for branch in $@
   do
     log_file="$working_folder/$branch.log"
+    #
     # -d Remove untracked directories in addition to untracked files.
+    #
     git clean -d --force
+    #
     # in case this is the first time we're seeing this branch
     # FIXME: this is going to spit out a "fatal" warning if branch already tracked
     # -t, --track When creating a new branch, set up "upstream" configuration.
+    #
     git checkout --track origin/$branch
     git checkout $branch
     git fetch origin
@@ -36,13 +40,23 @@ while [ 1 ]; do
     git ls-remote . | grep "origin/$branch$" | awk '{print $1}' > $working_folder/$branch-origin.hash
     DIFF=`diff $working_folder/$branch-heads.hash $working_folder/$branch-origin.hash`
     if [ "" != "$DIFF" ]; then
+      #
       # --hard Any changes to tracked files in the working tree discarded.
+      #
       git reset --hard origin/$branch > $log_file 2>&1
+      #
+      # get the comment from the latest commit
+      #
       comment=`git log --oneline -1`
       echo >> $log_file 2>&1
+      #
+      # install new gems, filtering out ones we already have
+      #
       (bundle install | grep -v 'Using ') > $log_file 2>&1
       echo >> $log_file 2>&1
-
+      #
+      # run a syntax check (rubocop) and report any issues
+      #
       bundle exec rubocop -a
       rubocop_diff="$working_folder/rubocop.diff"
       git diff > $rubocop_diff
@@ -52,31 +66,74 @@ while [ 1 ]; do
 	echo "</pre>" >> $rubocop_diff
         cat $rubocop_diff | mail -a "Content-type: text/html" -s "$headline" $EMAIL
       fi
+      #
+      # clean up any mess we've created from the prior steps
+      #
       git reset --hard origin/$branch
-
       echo "Top 10 rubocop offenders:" >> $log_file 2>&1
+      #
       # broken pipe workaround hack https://superuser.com/a/642932/23033
+      #
       (bundle exec rubocop --format worst | tail -n +1 | head -n 11) >> $log_file 2>/dev/null
       echo >> $log_file 2>&1
+      #
       # create the database(s) if necessary
+      #
       bundle exec rails db:test:prepare --trace >> $log_file 2>&1
+      #
+      # purge any orphaned elasticsearch indexes from prior test runs
+      #
+      bundle exec rails test:search:purge --trace >> $log_file 2>&1
+      #
+      # apply any migrations that weren't applied from the "prepare" step above
+      #
       RAILS_ENV=test bundle exec rails db:migrate --trace >> $log_file 2>&1
+      #
+      # if this is the front-end repository,
+      # run a syntax checker on all the coffeescript files
+      #
       if [ "$repository_name" == "ci-interface" ]; then
         # strip out files w/out errors and blank lines
         find app/javascript -name "*.coffee" -exec coffeelint {} \; | grep -v "0 errors" | grep -v " ✓ " | sed '/^$/d' >> $log_file 2>&1
       fi
+      #
+      # run a static security checker (brakeman) and report any issues
+      #
       bundle exec brakeman 2> /dev/null >> $log_file
+      #
+      # precompile assets
+      #
       RAILS_ENV=test bundle exec rails assets:precompile 2>/dev/null
+      #
+      # finally we actually run the tests
+      #
       bundle exec rails test --profile >> $log_file 2>&1
-      # why do we do this twice? to note anything that was "dirtied" into the log
+      #
+      # note anything that was "dirtied" into the log
+      #
       git reset --hard >> $log_file 2>&1
+      #
+      # check if there were any errors
+      #
       ERRORS_COUNT=`egrep '(Failure|Error):$' $log_file | wc -l`
+      #
+      # check the tesets actually "finished"
+      #
       FINISHED_IN=`grep 'Finished in' $log_file | wc -l`
       if [ "$FINISHED_IN" -ne "1" ]; then
         ERRORS_COUNT="911"
       fi
+      #
+      # build the email/chat subject line
+      #
       headline="$ERRORS_COUNT tests failed for $repository_name $branch $comment"
+      #
+      # send the email
+      #
       cat $log_file | perl -pe 's/\x1b\[[0-9;]*[mG]//g' | mail -s "$headline" $EMAIL
+      #
+      # if something broke, tell the slack chat channel
+      #
       if [ "$ERRORS_COUNT" -ne "0" ]; then
         if [ -z "$SLACKBOT_URL" ]; then
           echo "Please set SLACKBOT_URL so the Slack channel can be notified."
@@ -84,6 +141,9 @@ while [ 1 ]; do
           curl -X POST --data-urlencode "payload={\"channel\": \"#dev\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" "https://hooks.slack.com/services/$SLACKBOT_URL"
         fi
       fi
+      #
+      # clean up aftere ourselves
+      #
       rm log/test.log
     else
       echo NO CHANGES YET
