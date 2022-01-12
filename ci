@@ -84,18 +84,11 @@ while [ 1 ]; do
       # apply any migrations that weren't applied from the "prepare" step above
       #
       RAILS_ENV=test bundle exec rails db:migrate --trace >> $log_file 2>&1
-      if [ "$repository_name" == "ci-interface" ]; then
-        #
-        # if this is the front-end repository,
-        # run a syntax checker on all the coffeescript files
-        # and strip out files w/out errors and blank lines
-        #
-        find app/javascript -name "*.coffee" -exec coffeelint {} \; | grep -v "0 errors" | grep -v " ✓ " | sed '/^$/d' >> $log_file 2>&1
-      else
-        #
-        # else this is the back-end repository,
-        # purge any orphaned elasticsearch indexes from prior test runs
-        #
+      #
+      # if this is the back-end repository,
+      # purge any orphaned elasticsearch indexes from prior test runs
+      #
+      if [ "$repository_name" != "ci-interface" ]; then
         bundle exec rails test:search:purge --trace >> $log_file 2>&1
       fi
       #
