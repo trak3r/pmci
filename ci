@@ -89,7 +89,7 @@ while [ 1 ]; do
       # purge any orphaned elasticsearch indexes from prior test runs
       #
       if [ "$repository_name" != "ci-interface" ]; then
-        bundle exec rails test:search:purge --trace >> $log_file 2>&1
+        RAILS_ENV=test bundle exec rails test:search:purge --trace >> $log_file 2>&1
       fi
       #
       # run a static security checker (brakeman) and report any issues
