@@ -52,7 +52,7 @@ while [ 1 ]; do
       #
       # trigger rvm to switch to the target version of Ruby
       #
-      rvm use
+      source ~/.rvm/scripts/rvm
       #
       # install new gems, filtering out ones we already have
       #
