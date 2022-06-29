@@ -141,7 +141,17 @@ while [ 1 ]; do
         if [ -z "$SLACKBOT_URL" ]; then
           echo "Please set SLACKBOT_URL so the Slack channel can be notified."
         else
-          curl -X POST --data-urlencode "payload={\"channel\": \"#dev\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" "https://hooks.slack.com/services/$SLACKBOT_URL"
+          curl -X POST \
+          --data-urlencode "payload={\"channel\": \"#dev\", \"username\": \"CI\", \"text\": \"$headline\", \"icon_emoji\": \":warning:\"}" \
+          "https://hooks.slack.com/services/$SLACKBOT_URL"
+        fi
+        if [ -z "$GOOGLE_CHAT_TOKEN" ]; then
+          echo "Please set GOOGLE_CHAT_SPACE, GOOGLE_CHAT_KEY, and GOOGLE_CHAT_TOKEN so the Google Space can be notified."
+        else
+          curl -X POST \
+          -H 'Content-Type: application/json' \
+          -d "{\"text\": \"$headline\"}" \
+          "https://chat.googleapis.com/v1/spaces/$GOOGLE_CHAT_SPACE/messages?key=$GOOGLE_CHAT_KEY&token=$GOOGLE_CHAT_TOKEN"
         fi
       fi
       #
