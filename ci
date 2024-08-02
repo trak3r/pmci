@@ -51,6 +51,7 @@ while [ 1 ]; do
       echo >> $log_file 2>&1
       #
       # change ruby version 
+      # NOTE this doesn't actually work for some reason
       #
       rvm use < .ruby-version
       #
