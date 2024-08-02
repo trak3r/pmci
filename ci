@@ -50,6 +50,10 @@ while [ 1 ]; do
       comment=`git log --oneline -1`
       echo >> $log_file 2>&1
       #
+      # change ruby version 
+      #
+      rvm use < .ruby-version
+      #
       # install new gems, filtering out ones we already have
       #
       (bundle install | grep -v 'Using ') > $log_file 2>&1
