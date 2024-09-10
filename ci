@@ -24,6 +24,15 @@ while [ 1 ]; do
   for branch in $@
   do
     log_file="$working_folder/$branch.log"
+
+    killall ssh-agent 2> /dev/null
+    eval $(ssh-agent -s) # eval is necessary to load ENV variable values
+    if [ "$repository_name" != "ci-interface" ]; then
+      ssh-add "${HOME}/.ssh/id_ed25519" 2>&1
+    else
+      ssh-add "${HOME}/.ssh/id_ed25519_interface" 2>&1
+    fi
+
     #
     # -d Remove untracked directories in addition to untracked files.
     #
