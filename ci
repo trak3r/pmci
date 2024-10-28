@@ -20,6 +20,9 @@ repository_name=$(basename `git rev-parse --show-toplevel`)
 working_folder="/tmp/$repository_name"
 mkdir -p "$working_folder"
 
+# load the rvm environment (necessary for running as systemd)
+source /home/ubuntu/.rvm/scripts/rvm
+
 while [ 1 ]; do
   for branch in $@
   do
